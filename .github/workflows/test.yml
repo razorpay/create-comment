@@ -7,24 +7,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup PMG proxy
+        id: pmg-setup
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       - run: |
           npm install
       - run: |
           npm run all
+      - name: Enforce PMG policy
+        if: always()
+        run: |
+          if [ "${{ steps.pmg-setup.outcome }}" = "success" ]; then
+            pmg proxy stop --fail-on-violation
+          else
+            pmg proxy stop || true
+          fi
   single-line-comment: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup PMG proxy
+        id: pmg-setup
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       - uses: ./
         with:
           comment: hello
       - uses: ./
         with:
           comment: hello
+      - name: Enforce PMG policy
+        if: always()
+        run: |
+          if [ "${{ steps.pmg-setup.outcome }}" = "success" ]; then
+            pmg proxy stop --fail-on-violation
+          else
+            pmg proxy stop || true
+          fi
   multi-line-comment: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup PMG proxy
+        id: pmg-setup
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       - uses: ./
         with:
           comment: |
@@ -42,3 +79,11 @@ jobs:
           comment: |
             ## What No match
             Hello.
+      - name: Enforce PMG policy
+        if: always()
+        run: |
+          if [ "${{ steps.pmg-setup.outcome }}" = "success" ]; then
+            pmg proxy stop --fail-on-violation
+          else
+            pmg proxy stop || true
+          fi
